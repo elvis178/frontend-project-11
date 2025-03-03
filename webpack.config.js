@@ -1,7 +1,23 @@
 import HtmlWebpackPlugin from 'html-webpack-plugin';
+import path from 'path';
 
 export default {
   mode: process.env.NODE_ENV || 'development',
+  entry: {
+    filename: path.resolve(process.cwd(), 'src/index.js'),
+  },
+  output: {
+    path: path.resolve(process.cwd(), 'dist'),
+    filename: 'index.js',
+  },
+  devServer: {
+    port: 8080,
+    compress: true,
+    hot: true,
+    static: {
+      directory: path.join(process.cwd(), 'dist'),
+    },
+  },
   module: {
     rules: [
       {
@@ -34,7 +50,4 @@ export default {
       template: 'index.html',
     }),
   ],
-  output: {
-    clean: true,
-  },
 };

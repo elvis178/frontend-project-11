@@ -3,4 +3,4 @@
 [![Maintainability](https://api.codeclimate.com/v1/badges/d62ee95426c11e81a5ab/maintainability)](https://codeclimate.com/github/elvis178/frontend-project-11/maintainability)
 
 ## Demo version
-(https://frontend-project-11-green-rho.vercel.app)
+(https://frontend-project-11-plum-eight.vercel.app/)
