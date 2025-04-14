@@ -1,68 +1,74 @@
 import i18next from 'i18next';
-import validator from './validator.js';
-import initView from './view.js';
+import * as yup from 'yup';
+import onChange from 'on-change';
+import handleStateChange from './view.js';
+import resources from './locales';
 
-const elements = {
-  form: document.querySelector('.rss-form'),
-  input: document.getElementById('url-input'),
-  feedbackContainer: document.querySelector('.feedback'),
-  postsContainer: document.querySelector('.posts'),
-  feedsContainer: document.querySelector('.feeds'),
-  staticEl: {
-    title: document.querySelector('h1'),
-    subtitle: document.querySelector('.lead'),
-    label: document.querySelector('[for="url-input"]'),
-    button: document.querySelector('[type="submit"]'),
-  },
-};
-
-const state = {
-  form: {
-    status: 'filling', // filling, processing, success, error
-    isValid: true,
-    error: '',
-  },
-  feeds: [],
-  posts: [],
-};
-
-i18next.init({
-  lng: 'ru',
-  debug: true,
-  resources: {
-    ru: {
-      translation: {
-        errors: {
-          invalidUrl: 'Ссылка должна быть валидным URL',
-          existsRss: 'RSS уже существует',
-        },
-        feedback: {
-          success: 'RSS успешно загружен',
-        },
-      },
+const app = () => {
+  yup.setLocale({
+    string: {
+      url: () => ({ key: 'invalidUrl' }),
+      required: () => ({ key: 'requiredField' }),
     },
-  },
-}).then(() => {
-  const watchedState = initView(state, elements, i18next);
-
-  elements.form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    const formData = new FormData(e.target);
-    const url = formData.get('url').trim();
-    const urlFeeds = state.feeds.map((feed) => feed.url);
-
-    try {
-      watchedState.form.status = 'processing';
-      await validator(url, urlFeeds); // Валидация
-
-      // Если валидация прошла успешно
-      watchedState.form.status = 'success';
-      watchedState.feeds.push({ url }); // Добавляем URL в список фидов
-    } catch (err) {
-      watchedState.form.status = 'error';
-      watchedState.form.error = err.message; // Устанавливаем ошибку
-    }
+    mixed: {
+      notOneOf: () => ({ key: 'duplicateFeed' }),
+    },
   });
-});
 
+  const state = {
+    formState: 'filling',
+    error: null,
+    feeds: [],
+    posts: [],
+    uiState: {
+      displayedPost: null,
+      viewedPostIds: new Set(),
+    },
+  };
+
+  const elements = {
+    form: document.querySelector('.rss-form'),
+    urlInput: document.querySelector('#url-input'),
+    submit: document.querySelector('[type="submit"]'),
+    feedback: document.querySelector('.feedback'),
+    postsList: document.querySelector('.posts'),
+    feedsList: document.querySelector('.feeds'),
+    modal: document.querySelector('.modal'),
+    modalHeader: document.querySelector('.modal-header'),
+    modalBody: document.querySelector('.modal-body'),
+    modalHref: document.querySelector('.full-article'),
+  };
+
+  const i18nextInstance = i18next.createInstance();
+  i18nextInstance.init({
+    lng: 'ru',
+    debug: false,
+    resources,
+  })
+    .then(() => {
+      const watchedState = onChange(state, handleStateChange(state, elements, i18nextInstance));
+      const makeSchema = (validatedLinks) => yup.string()
+        .required()
+        .url()
+        .notOneOf(validatedLinks);
+
+        elements.form.addEventListener('submit', (e) => {
+          e.preventDefault();
+          const addedLinks = watchedState.feeds.map((feed) => feed.link);
+          const schema = makeSchema(addedLinks);
+          const formData = new FormData(e.target);
+          const input = formData.get('url');
+          schema.validate(input)
+            .then(() => {
+              watchedState.error = null;
+              watchedState.formState = 'sending';
+            })
+            .catch((error) => {
+              watchedState.formState = 'invalid';
+              watchedState.error = error;
+            });
+        });
+      });
+  };
+
+  export default app;
