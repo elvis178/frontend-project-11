@@ -1,52 +1,71 @@
-import onChange from 'on-change';
-
-export default (state, elements, i18n) => {
-  const {
-    form, input, feedbackContainer, sendBtn,
-  } = elements;
-
-  const renderForm = () => {
-    input.focus();
-    Object.entries(elements.staticEl).forEach(([key, el]) => {
-      const element = el;
-      element.textContent = i18n.t(key);
-    });
-  };
-
-  const handleFormState = (value) => {
-    switch (value) {
-      case 'processing':
-        sendBtn.setAttribute('disabled', true);
-        input.setAttribute('readonly', true);
-        feedbackContainer.textContent = '';
-        break;
-      case 'success':
-        sendBtn.removeAttribute('disabled');
-        input.removeAttribute('readonly');
-        form.reset();
-        input.focus();
-        feedbackContainer.textContent = i18n.t('feedback.success');
-        break;
-      case 'error':
-        sendBtn.removeAttribute('disabled');
-        input.removeAttribute('readonly');
-        feedbackContainer.textContent = i18n.t(state.form.error);
-        input.classList.add('is-invalid');
-        break;
-      default:
-        break;
-    }
-  };
-
-  const watchedState = onChange(state, (path) => {
-    switch (path) {
-      case 'form.status':
-        handleFormState(state.form.status);
-        break;
-      default:
-        break;
-    }
-  });
-
-  return watchedState;
+const handleValidationError = ({ submit, urlInput, feedback }) => {
+  submit.disabled = false;
+  urlInput.classList.add('is-invalid');
+  feedback.classList.remove('text-success');
+  feedback.classList.remove('text-warning');
+  feedback.classList.add('text-danger');
 };
+
+const handleLoadingState = ({ submit, urlInput, feedback }, i18next) => {
+  submit.disabled = true;
+  urlInput.classList.remove('is-invalid');
+  feedback.classList.remove('text-danger');
+  feedback.classList.remove('text-success');
+  feedback.classList.add('text-warning');
+  feedback.textContent = i18next.t('status.sending');
+};
+
+const handleSuccessState = ({
+  submit, urlInput, feedback, form,
+}, i18next) => {
+  submit.disabled = false;
+  urlInput.classList.remove('is-invalid');
+  feedback.classList.remove('text-danger');
+  feedback.classList.remove('text-warning');
+  feedback.classList.add('text-success');
+  feedback.textContent = i18next.t('status.success');
+  form.reset();
+  urlInput.focus();
+};
+
+const handleFormStateUpdate = (elements, i18next, value) => {
+  switch (value) {
+    case 'invalid':
+      handleValidationError(elements);
+      break;
+    case 'sending':
+      handleLoadingState(elements, i18next);
+      break;
+    case 'added': {
+      handleSuccessState(elements, i18next);
+      break;
+    }
+    default:
+      break;
+  }
+};
+
+const handleErrorRender = (state, { feedback }, i18next, error) => {
+  if (error === null) {
+    return;
+  }
+
+  feedback.classList.add('text-danger');
+  feedback.textContent = i18next.t(`errors.${state.error}`);
+};
+
+
+const handleStateChange = (state, elements, i18next) => (path, value) => {
+  switch (path) {
+    case 'formState':
+      handleFormStateUpdate(elements, i18next, value);
+      break;
+    case 'error':
+      handleErrorRender(state, elements, i18next, value);
+      break;
+    default:
+      break;
+  }
+};
+
+export default handleStateChange;
