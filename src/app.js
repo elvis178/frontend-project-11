@@ -1,8 +1,65 @@
 import i18next from 'i18next';
 import * as yup from 'yup';
 import onChange from 'on-change';
+import axios from 'axios';
+import { uniqueId } from 'lodash';
 import handleStateChange from './view.js';
 import resources from './locales';
+import parseRss from './parser.js';
+
+
+const getProxyUrl = (url) => {
+  const proxyUrl = new URL('/get', 'https://allorigins.hexlet.app');
+  proxyUrl.searchParams.append('disableCache', 'true');
+  proxyUrl.searchParams.append('url', url);
+  return proxyUrl.toString();
+};
+
+const getRssData = (rssUrl) => axios.get(getProxyUrl(rssUrl));
+
+const addIds = (posts, feedId) => {
+  posts.forEach((post) => {
+    post.id = uniqueId();
+    post.feedId = feedId;
+  });
+};
+
+const handleData = (data, watchedState) => {
+  const { feed, posts } = data;
+  feed.id = uniqueId();
+  watchedState.feeds.push(feed);
+  addIds(posts, feed.id);
+  watchedState.posts.push(...posts);
+};
+
+const refreshFeedContent = (watchedState) => {
+  const promises = watchedState.feeds.map((feed) => getRssData(feed.link)
+    .then((response) => {
+      const { posts } = parseRss(response.data.contents);
+      const currentPostsInState = watchedState.posts;
+      const postsMatchingFeedId = currentPostsInState.filter((post) => post.feedId === feed.id);
+      const processedPostUrls = postsMatchingFeedId.map((post) => post.link);
+      const newPosts = posts.filter((post) => !processedPostUrls.includes(post.link));
+      addIds(newPosts, feed.id);
+      watchedState.posts.unshift(...newPosts);
+    })
+    .catch((error) => {
+      console.error(`Error fetching data from feed ${feed.id}:`, error);
+    }));
+  return Promise.all(promises).finally(() => setTimeout(refreshFeedContent, 5000, watchedState));
+};
+
+const handleError = (error) => {
+  if (error.isParsingError) {
+    return 'invalidRSS';
+  }
+  if (axios.isAxiosError(error)) {
+    return 'networkError';
+  }
+
+  return error.message.key ?? 'unknown';
+};
+
 
 const app = () => {
   yup.setLocale({
@@ -62,10 +119,20 @@ const app = () => {
             .then(() => {
               watchedState.error = null;
               watchedState.formState = 'sending';
+              return getRssData(input);
+            })
+            .then((response) => {
+              if (!response.data.contents) {
+                throw new Error('invalidRSS');
+              }
+              const data = parseRss(response.data.contents, input);
+              handleData(data, watchedState);
+              watchedState.formState = 'added';
+
             })
             .catch((error) => {
               watchedState.formState = 'invalid';
-              watchedState.error = error;
+              watchedState.error =  handleError(error);
             });
         });
       });
