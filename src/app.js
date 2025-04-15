@@ -135,6 +135,15 @@ const app = () => {
               watchedState.error =  handleError(error);
             });
         });
+
+        elements.postsList.addEventListener('click', (e) => {
+          const postId = e.target.dataset.id;
+          if (postId) {
+            watchedState.uiState.displayedPost = postId;
+            watchedState.uiState.viewedPostIds.add(postId);
+          }
+        });
+        refreshFeedContent(watchedState);
       });
   };
 
