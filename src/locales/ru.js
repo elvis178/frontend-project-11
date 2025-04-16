@@ -1,19 +1,10 @@
 export default {
   translation: {
-    validationErrors:  {
-      invalidUrl: 'Ссылка должна быть валидным URL',
-      invalidRss: 'Ресурс не содержит валидный RSS',
-      duplicateFeed: 'RSS уже существует',
-      requiredField: 'Поле не должно быть пустым',
-    },
-    networkErrors:  {
-      connectionFailed: 'Ошибка сети',
-      unknownError: 'Что-то пошло не так',
-    },
-    feedStates: {
-      loading: 'RSS загружается',
-      loaded: 'RSS успешно загружен',
-    },
+    title: 'RSS агрегатор',
+    subtitle: 'Начните читать RSS сегодня! Это легко, это красиво.',
+    label: 'Ссылка RSS',
+    button: 'Добавить',
+    feedback: 'RSS успешно загружен',
     ui: {
       sections: {
         feeds: 'Фиды',
@@ -22,6 +13,16 @@ export default {
       buttons: {
         view: 'Просмотр',
       },
+    },
+    modal: {
+      modalLink: 'Читать полностью',
+      modalBody: 'Закрыть',
+    },
+    validationErrors: {
+      invalidUrl: 'Ссылка должна быть валидным URL',
+      invalidRss: 'Ресурс не содержит валидный RSS',
+      duplicateFeed: 'RSS уже существует',
+      networkError: 'Ошибка сети',
     },
   },
 };
