@@ -3,8 +3,7 @@
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 
-
-const env = typeof process !== 'undefined' ? process.env : { NODE_ENV: 'development' };
+const { env } = (typeof process !== 'undefined' ? process : { env: { NODE_ENV: 'development' } });
 
 export default {
   mode: env.NODE_ENV || 'development',
@@ -28,15 +27,10 @@ export default {
       {
         test: /\.woff2?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
         type: 'asset/inline',
-        parser: {
-          dataUrlCondition: {
-            maxSize: 10 * 1024 // 10KB
-          }
-        }
       },
       {
         test: /\.(ttf|eot|svg)(\?[\s\S]+)?$/,
-        type: 'asset/resource'
+        type: 'asset/resource',
       },
     ],
   },
