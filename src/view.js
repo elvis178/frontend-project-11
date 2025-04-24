@@ -1,71 +1,182 @@
-const handleValidationError = ({ submit, urlInput, feedback }) => {
-  submit.disabled = false;
-  urlInput.classList.add('is-invalid');
-  feedback.classList.remove('text-success');
-  feedback.classList.remove('text-warning');
-  feedback.classList.add('text-danger');
-};
+import onChange from 'on-change';
 
-const handleLoadingState = ({ submit, urlInput, feedback }, i18next) => {
-  submit.disabled = true;
-  urlInput.classList.remove('is-invalid');
-  feedback.classList.remove('text-danger');
-  feedback.classList.remove('text-success');
-  feedback.classList.add('text-warning');
-  feedback.textContent = i18next.t('status.sending');
-};
+export default (elements, i18n, state) => {
+  const { t } = i18n;
 
-const handleSuccessState = ({
-  submit, urlInput, feedback, form,
-}, i18next) => {
-  submit.disabled = false;
-  urlInput.classList.remove('is-invalid');
-  feedback.classList.remove('text-danger');
-  feedback.classList.remove('text-warning');
-  feedback.classList.add('text-success');
-  feedback.textContent = i18next.t('status.success');
-  form.reset();
-  urlInput.focus();
-};
+  const renderFormView = () => {
+    const { input } = elements;
+    input.focus();
+    Object.entries(elements.staticEl).forEach(([key, el]) => {
+      const element = el;
+      element.textContent = t(`${key}`);
+    });
+  };
 
-const handleFormStateUpdate = (elements, i18next, value) => {
-  switch (value) {
-    case 'invalid':
-      handleValidationError(elements);
-      break;
-    case 'sending':
-      handleLoadingState(elements, i18next);
-      break;
-    case 'added': {
-      handleSuccessState(elements, i18next);
-      break;
+  const renderBlockView = (title) => {
+    const card = document.createElement('div');
+    const cardBody = document.createElement('div');
+    const cardTitle = document.createElement('h2');
+
+    card.classList.add('card', 'border-0');
+    cardBody.classList.add('card-body');
+    cardTitle.classList.add('card-title', 'h4');
+    cardTitle.textContent = title;
+
+    card.append(cardBody);
+    cardBody.append(cardTitle);
+    return card;
+  };
+
+  const renderFeedsView = () => {
+    const feedContainer = document.querySelector('.feeds');
+    feedContainer.innerHTML = '';
+    const blok = renderBlockView(t('feedTitle'));
+    const lists = document.createElement('ul');
+    lists.classList.add('list-group', 'border-0', 'rounded-0');
+
+    state.feeds.forEach(({ title, description }) => {
+      const li = document.createElement('li');
+      const h3 = document.createElement('h3');
+      const p = document.createElement('p');
+      li.classList.add('list-group-item', 'border-0', 'border-end-0');
+      h3.classList.add('h6', 'm-0');
+      p.classList.add('m-0', 'small', 'text-black-50');
+      h3.textContent = title;
+      p.textContent = description;
+
+      li.append(h3, p);
+      lists.append(li);
+    });
+    feedContainer.append(blok, lists);
+  };
+
+  const renderPostsView = () => {
+    const postsContainer = document.querySelector('.posts');
+    postsContainer.innerHTML = '';
+    const post = renderBlockView(t('postsTitle'));
+    const lists = document.createElement('ul');
+    lists.classList.add('list-group', 'border-0', 'rounded-0');
+
+    state.posts.forEach(({ title, id, url }) => {
+      const li = document.createElement('li');
+      const link = document.createElement('a');
+      const button = document.createElement('button');
+      li.classList.add('list-group-item', 'border-0', 'border-end-0', 'd-flex', 'justify-content-between', 'align-items-start');
+      link.classList.add('fw-bold');
+      link.setAttribute('href', url);
+      link.setAttribute('id', id);
+      link.setAttribute('target', '_blank');
+      link.textContent = title;
+
+      button.classList.add('btn', 'btn-outline-primary', 'btn-sm');
+      button.setAttribute('type', 'button');
+      button.setAttribute('data-id', id);
+      button.setAttribute('data-bs-toggle', 'modal');
+      button.setAttribute('data-bs-target', '#modal');
+      button.textContent = t('postsButton');
+
+      li.append(link, button);
+      lists.append(li);
+    });
+    postsContainer.append(post, lists);
+  };
+
+  const renderModalView = () => {
+    const activePost = state.posts.find(({ id }) => id === state.ui.activePostId);
+    const modalTitle = document.querySelector('.modal-title');
+    const modalBody = document.querySelector('.modal-body');
+    const modalLink = document.querySelector('[target="_blank"]');
+    const modalBtn = document.querySelector('[data-bs-dismiss="modal"]');
+
+    const { title, description, url } = activePost;
+    modalTitle.textContent = title;
+    modalBody.textContent = description;
+    modalLink.textContent = t('modal.modalLink');
+    modalBtn.textContent = t('modal.modalBody');
+    modalLink.url = url;
+  };
+
+  const renderSuccessState = () => {
+    const { staticEl, input, errorElement } = elements;
+    staticEl.button.disabled = false;
+    input.classList.remove('is-invalid');
+    errorElement.classList.remove('text-danger');
+    errorElement.classList.add('text-success');
+    errorElement.textContent = t('success');
+  };
+
+  const renderInvalidRSS = () => {
+    const { errorElement } = elements;
+    errorElement.classList.remove('text-success');
+    errorElement.classList.add('text-danger');
+    errorElement.textContent = t('errors.invalidRSS');
+  };
+
+  const watchedState = onChange(state, (path, value, previousValue) => {
+    const {
+      errorElement, input, form, staticEl,
+    } = elements;
+    switch (path) {
+      case 'form.status':
+        renderFormView();
+        break;
+      case 'form.errors':
+        errorElement.classList.remove('text-success');
+        errorElement.classList.add('text-danger');
+        errorElement.textContent = t(state.form.errors);
+        input.classList.add('is-invalid');
+        break;
+      case 'loadingProcess.status':
+        if (value === 'sending') {
+          staticEl.button.disabled = true;
+          errorElement.textContent = '';
+        } else if (value === 'finished') {
+          renderSuccessState();
+          form.reset();
+          input.focus();
+          renderFeedsView();
+          renderPostsView();
+        }
+        break;
+      case 'loadingProcess.error':
+        input.classList.remove('is-invalid');
+        if (value === 'networkError') {
+          errorElement.textContent = t('errors.networkError');
+        }
+        if (value === 'invalidRSS') {
+          renderInvalidRSS();
+        }
+        break;
+      case 'posts':
+        if (value.length !== previousValue.length) {
+          renderPostsView();
+        }
+        break;
+      case 'feeds':
+        if (value) {
+          renderFeedsView();
+          form.reset();
+          input.focus();
+        }
+        break;
+      case 'ui.touchedPostId':
+        state.ui.touchedPostId.forEach((postId) => {
+          const post = document.getElementById(postId);
+          if (!post.classList.contains('fw-normal')) {
+            post.classList.remove('fw-bold');
+            post.classList.add('fw-normal', 'link-secondary');
+          }
+        });
+        break;
+      case 'ui.activePostId':
+        renderModalView();
+        break;
+      default:
+        break;
     }
-    default:
-      break;
-  }
+  });
+  return {
+    watchedState,
+    renderFormView,
+  };
 };
-
-const handleErrorRender = (state, { feedback }, i18next, error) => {
-  if (error === null) {
-    return;
-  }
-
-  feedback.classList.add('text-danger');
-  feedback.textContent = i18next.t(`errors.${state.error}`);
-};
-
-
-const handleStateChange = (state, elements, i18next) => (path, value) => {
-  switch (path) {
-    case 'formState':
-      handleFormStateUpdate(elements, i18next, value);
-      break;
-    case 'error':
-      handleErrorRender(state, elements, i18next, value);
-      break;
-    default:
-      break;
-  }
-};
-
-export default handleStateChange;
