@@ -1,13 +1,13 @@
 /* eslint-env node */
 
-
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 
-const ENV = process.env.NODE_ENV || 'development';
+
+const env = typeof process !== 'undefined' ? process.env : { NODE_ENV: 'development' };
 
 export default {
-  mode: ENV,
+  mode: env.NODE_ENV || 'development',
   module: {
     rules: [
       {
@@ -20,10 +20,7 @@ export default {
           },
         },
       },
-      { 
-        test: /\.css$/, 
-        use: ['style-loader', 'css-loader', 'postcss-loader'] 
-      },
+      { test: /\.css$/, use: ['style-loader', 'css-loader', 'postcss-loader'] },
       {
         test: /\.scss$/,
         use: ['style-loader', 'css-loader', 'sass-loader', 'postcss-loader'],
@@ -33,7 +30,7 @@ export default {
         type: 'asset/inline',
         parser: {
           dataUrlCondition: {
-            maxSize: 10 * 1024
+            maxSize: 10 * 1024 // 10KB
           }
         }
       },
@@ -46,11 +43,8 @@ export default {
   plugins: [
     new HtmlWebpackPlugin({
       template: 'index.html',
-      filename: 'index.html',
     }),
-    new MiniCssExtractPlugin({
-      filename: 'styles.css',
-    }),
+    new MiniCssExtractPlugin(),
   ],
   output: {
     filename: 'bundle.js',
