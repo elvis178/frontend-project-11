@@ -3,10 +3,11 @@
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 
-const { env } = (typeof process !== 'undefined' ? process : { env: { NODE_ENV: 'development' } });
+
+const mode = 'development'; 
 
 export default {
-  mode: env.NODE_ENV || 'development',
+  mode,
   module: {
     rules: [
       {
@@ -19,7 +20,10 @@ export default {
           },
         },
       },
-      { test: /\.css$/, use: ['style-loader', 'css-loader', 'postcss-loader'] },
+      { 
+        test: /\.css$/, 
+        use: ['style-loader', 'css-loader', 'postcss-loader'] 
+      },
       {
         test: /\.scss$/,
         use: ['style-loader', 'css-loader', 'sass-loader', 'postcss-loader'],
