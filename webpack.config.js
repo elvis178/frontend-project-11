@@ -1,13 +1,8 @@
-/* eslint-env node */
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
-import { fileURLToPath } from 'url';
 import path from 'path';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const config = {
+export default {
   mode: process.env.NODE_ENV || 'development',
   entry: './src/index.js',
   module: {
@@ -23,8 +18,8 @@ const config = {
         },
       },
       { 
-        test: /\.css$/,
-        use: [MiniCssExtractPlugin.loader, 'css-loader', 'postcss-loader'],
+        test: /\.css$/, 
+        use: [MiniCssExtractPlugin.loader, 'css-loader', 'postcss-loader'] 
       },
       {
         test: /\.scss$/,
@@ -32,36 +27,36 @@ const config = {
       },
       {
         test: /\.woff2?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
-        type: 'asset/inline',
+        use: 'url-loader?limit=10000',
       },
       {
         test: /\.(ttf|eot|svg)(\?[\s\S]+)?$/,
-        type: 'asset/resource',
+        use: 'file-loader',
       },
     ],
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template: path.resolve(__dirname, 'index.html'),
+      template: 'index.html',
+      filename: 'index.html',
     }),
-    new MiniCssExtractPlugin(),
+    new MiniCssExtractPlugin({
+      filename: 'styles.css',
+    }),
   ],
   output: {
     filename: 'bundle.js',
-    path: path.resolve(__dirname, 'dist'),
+    path: path.resolve(process.cwd(), 'dist'),
     clean: true,
-    assetModuleFilename: 'assets/[hash][ext][query]',
   },
   devServer: {
     hot: true,
     open: true,
     static: {
-      directory: path.resolve(__dirname, 'dist'),
+      directory: path.join(process.cwd(), 'dist'),
     },
     client: {
       overlay: false,
     },
   },
 };
-
-export default config;
