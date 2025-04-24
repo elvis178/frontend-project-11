@@ -4,22 +4,24 @@ import pluginJs from "@eslint/js";
 /** @type {import('eslint').Linter.Config} */
 export default [
   {
-    ignores: ["dist/**", "node_modules/**"],
-  },
-  {
     files: ["**/*.js"],
     languageOptions: {
       globals: {
+        ...globals.node,
         ...globals.browser,
-        ...globals.node, 
       },
       parserOptions: {
         ecmaVersion: "latest",
         sourceType: "module",
       },
     },
-    rules: {
-      "no-undef": "error",
+  },
+  {
+    files: ["webpack.config.js"],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+      },
     },
   },
   pluginJs.configs.recommended,

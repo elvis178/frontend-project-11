@@ -1,15 +1,15 @@
 /* eslint-env node */
-
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
+import { fileURLToPath } from 'url';
 import path from 'path';
 
-const PROJECT_ROOT = path.resolve(__dirname);
-const DIST_DIR = path.join(PROJECT_ROOT, 'dist');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-export default {
+const config = {
   mode: process.env.NODE_ENV || 'development',
-  entry: path.join(PROJECT_ROOT, 'src', 'index.js'),
+  entry: './src/index.js',
   module: {
     rules: [
       {
@@ -42,23 +42,26 @@ export default {
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template: path.join(PROJECT_ROOT, 'index.html'),
+      template: path.resolve(__dirname, 'index.html'),
     }),
     new MiniCssExtractPlugin(),
   ],
   output: {
     filename: 'bundle.js',
-    path: DIST_DIR,
+    path: path.resolve(__dirname, 'dist'),
     clean: true,
+    assetModuleFilename: 'assets/[hash][ext][query]',
   },
   devServer: {
     hot: true,
     open: true,
     static: {
-      directory: DIST_DIR,
+      directory: path.resolve(__dirname, 'dist'),
     },
     client: {
       overlay: false,
     },
   },
 };
+
+export default config;
