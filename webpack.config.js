@@ -4,7 +4,6 @@ import path from 'path';
 
 export default {
   mode: process.env.NODE_ENV || 'development',
-  entry: './src/index.js',
   module: {
     rules: [
       {
@@ -17,13 +16,10 @@ export default {
           },
         },
       },
-      { 
-        test: /\.css$/, 
-        use: [MiniCssExtractPlugin.loader, 'css-loader', 'postcss-loader'] 
-      },
+      { test: /\.css$/, use: ['style-loader', 'css-loader', 'postcss-loader'] },
       {
         test: /\.scss$/,
-        use: [MiniCssExtractPlugin.loader, 'css-loader', 'postcss-loader', 'sass-loader'],
+        use: ['style-loader', 'css-loader', 'sass-loader', 'postcss-loader'],
       },
       {
         test: /\.woff2?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
