@@ -21,4 +21,8 @@ make install
 ```
 make build
 ```
+### Development
+```
+make develop
+```
 ![img.png](public/img.png)
