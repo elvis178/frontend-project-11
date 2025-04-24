@@ -1,10 +1,13 @@
-/* eslint-env node */ 
+/* eslint-env node */
+
 
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 
+const ENV = process.env.NODE_ENV || 'development';
+
 export default {
-  mode: process.env.NODE_ENV || 'development',
+  mode: ENV,
   module: {
     rules: [
       {
@@ -17,18 +20,26 @@ export default {
           },
         },
       },
-      { test: /\.css$/, use: ['style-loader', 'css-loader', 'postcss-loader'] },
+      { 
+        test: /\.css$/, 
+        use: ['style-loader', 'css-loader', 'postcss-loader'] 
+      },
       {
         test: /\.scss$/,
         use: ['style-loader', 'css-loader', 'sass-loader', 'postcss-loader'],
       },
       {
         test: /\.woff2?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
-        use: 'url-loader?limit=10000',
+        type: 'asset/inline',
+        parser: {
+          dataUrlCondition: {
+            maxSize: 10 * 1024
+          }
+        }
       },
       {
         test: /\.(ttf|eot|svg)(\?[\s\S]+)?$/,
-        use: 'file-loader',
+        type: 'asset/resource'
       },
     ],
   },
