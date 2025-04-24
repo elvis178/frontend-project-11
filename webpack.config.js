@@ -4,13 +4,12 @@ import HtmlWebpackPlugin from 'html-webpack-plugin';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import path from 'path';
 
-// Создаем константы для часто используемых значений
-const currentWorkingDir = process.cwd();
-const distPath = path.resolve(currentWorkingDir, 'dist');
+const PROJECT_ROOT = path.resolve(__dirname);
+const DIST_DIR = path.join(PROJECT_ROOT, 'dist');
 
-const config = {
+export default {
   mode: process.env.NODE_ENV || 'development',
-  entry: './src/index.js',
+  entry: path.join(PROJECT_ROOT, 'src', 'index.js'),
   module: {
     rules: [
       {
@@ -43,26 +42,23 @@ const config = {
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template: 'index.html',
+      template: path.join(PROJECT_ROOT, 'index.html'),
     }),
     new MiniCssExtractPlugin(),
   ],
   output: {
     filename: 'bundle.js',
-    path: distPath,
+    path: DIST_DIR,
     clean: true,
-    assetModuleFilename: 'assets/[hash][ext][query]',
   },
   devServer: {
     hot: true,
     open: true,
     static: {
-      directory: distPath,
+      directory: DIST_DIR,
     },
     client: {
       overlay: false,
     },
   },
 };
-
-export default config;
