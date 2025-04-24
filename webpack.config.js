@@ -1,8 +1,9 @@
+/* eslint-env node */
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import path from 'path';
 
-export default {
+const config = {
   mode: process.env.NODE_ENV || 'development',
   entry: './src/index.js',
   module: {
@@ -18,8 +19,8 @@ export default {
         },
       },
       { 
-        test: /\.css$/, 
-        use: [MiniCssExtractPlugin.loader, 'css-loader', 'postcss-loader'] 
+        test: /\.css$/,
+        use: [MiniCssExtractPlugin.loader, 'css-loader', 'postcss-loader'],
       },
       {
         test: /\.scss$/,
@@ -27,27 +28,25 @@ export default {
       },
       {
         test: /\.woff2?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
-        use: 'url-loader?limit=10000',
+        type: 'asset/inline',
       },
       {
         test: /\.(ttf|eot|svg)(\?[\s\S]+)?$/,
-        use: 'file-loader',
+        type: 'asset/resource',
       },
     ],
   },
   plugins: [
     new HtmlWebpackPlugin({
       template: 'index.html',
-      filename: 'index.html',
     }),
-    new MiniCssExtractPlugin({
-      filename: 'styles.css',
-    }),
+    new MiniCssExtractPlugin(),
   ],
   output: {
     filename: 'bundle.js',
     path: path.resolve(process.cwd(), 'dist'),
     clean: true,
+    assetModuleFilename: 'assets/[hash][ext][query]',
   },
   devServer: {
     hot: true,
@@ -60,3 +59,5 @@ export default {
     },
   },
 };
+
+export default config;
