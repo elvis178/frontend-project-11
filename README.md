@@ -17,3 +17,8 @@ cd frontend-project-11
 ```
 make install
 ```
+### Build the webpack
+```
+make build
+```
+![img.png](public/img.png)
