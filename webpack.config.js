@@ -4,6 +4,10 @@ import HtmlWebpackPlugin from 'html-webpack-plugin';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import path from 'path';
 
+// Создаем константы для часто используемых значений
+const currentWorkingDir = process.cwd();
+const distPath = path.resolve(currentWorkingDir, 'dist');
+
 const config = {
   mode: process.env.NODE_ENV || 'development',
   entry: './src/index.js',
@@ -45,7 +49,7 @@ const config = {
   ],
   output: {
     filename: 'bundle.js',
-    path: path.resolve(process.cwd(), 'dist'),
+    path: distPath,
     clean: true,
     assetModuleFilename: 'assets/[hash][ext][query]',
   },
@@ -53,7 +57,7 @@ const config = {
     hot: true,
     open: true,
     static: {
-      directory: path.join(process.cwd(), 'dist'),
+      directory: distPath,
     },
     client: {
       overlay: false,
