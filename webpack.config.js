@@ -1,7 +1,10 @@
 import HtmlWebpackPlugin from 'html-webpack-plugin';
+import MiniCssExtractPlugin from 'mini-css-extract-plugin';
+import path from 'path';
 
 export default {
   mode: process.env.NODE_ENV || 'development',
+  entry: './src/index.js',
   module: {
     rules: [
       {
@@ -14,10 +17,13 @@ export default {
           },
         },
       },
-      { test: /\.css$/, use: ['style-loader', 'css-loader', 'postcss-loader'] },
+      { 
+        test: /\.css$/, 
+        use: [MiniCssExtractPlugin.loader, 'css-loader', 'postcss-loader'] 
+      },
       {
         test: /\.scss$/,
-        use: ['style-loader', 'css-loader', 'sass-loader', 'postcss-loader'],
+        use: [MiniCssExtractPlugin.loader, 'css-loader', 'postcss-loader', 'sass-loader'],
       },
       {
         test: /\.woff2?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
@@ -32,16 +38,25 @@ export default {
   plugins: [
     new HtmlWebpackPlugin({
       template: 'index.html',
+      filename: 'index.html',
+    }),
+    new MiniCssExtractPlugin({
+      filename: 'styles.css',
     }),
   ],
   output: {
+    filename: 'bundle.js',
+    path: path.resolve(process.cwd(), 'dist'),
     clean: true,
   },
   devServer: {
     hot: true,
     open: true,
+    static: {
+      directory: path.join(process.cwd(), 'dist'),
+    },
     client: {
-      overlay: false, // Отключает overlay с ошибками в браузере
+      overlay: false,
     },
   },
 };
