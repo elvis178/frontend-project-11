@@ -1,13 +1,31 @@
 import globals from "globals";
 import pluginJs from "@eslint/js";
 
-/** @type {import('eslint').Linter.Config[]} */
+/** @type {import('eslint').Linter.Config} */
 export default [
   {
+    files: ["**/*.js"],
     languageOptions: {
       globals: {
         ...globals.browser,
-        ...globals.node, 
+        ...globals.node,
+        process: "readonly",
+      },
+      parserOptions: {
+        ecmaVersion: "latest",
+        sourceType: "module",
+      },
+    },
+    rules: {
+      "no-undef": "error",
+    },
+  },
+  {
+    files: ["webpack.config.js"],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+        process: "readonly",
       },
     },
   },
