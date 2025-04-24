@@ -1,6 +1,5 @@
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
-import path from 'path';
 
 export default {
   mode: process.env.NODE_ENV || 'development',
@@ -42,15 +41,11 @@ export default {
   ],
   output: {
     filename: 'bundle.js',
-    path: path.resolve(process.cwd(), 'dist'),
     clean: true,
   },
   devServer: {
     hot: true,
     open: true,
-    static: {
-      directory: path.join(process.cwd(), 'dist'),
-    },
     client: {
       overlay: false,
     },
