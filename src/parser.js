@@ -1,11 +1,16 @@
 const parsePostItem = (post) => {
-  const link = post.querySelector('link').textContent;
-  const title = post.querySelector('title').textContent;
-  const description = post.querySelector('description').textContent;
+  const link = post.querySelector('link')?.textContent;
+  const title = post.querySelector('title')?.textContent;
+  const description = post.querySelector('description')?.textContent;
+  
+  if (!link || !title) {
+    throw new Error('invalidRSS');
+  }
+
   return {
     link,
     title,
-    description,
+    description: description || '',
   };
 };
 
@@ -15,22 +20,38 @@ const parseRss = (rss, url) => {
 
   const parseError = data.querySelector('parsererror');
   if (parseError) {
-    const error = new Error(parseError.textContent);
-    error.isParsingError = true;
-    throw error;
+    throw new Error('invalidRSS');
   }
 
-  const feedTitle = data.querySelector('title').textContent;
-  const feedDescription = data.querySelector('description').textContent;
+  const rssElement = data.querySelector('rss');
+  if (!rssElement) {
+    throw new Error('invalidRSS');
+  }
+
+  const channel = data.querySelector('channel');
+  if (!channel) {
+    throw new Error('invalidRSS');
+  }
+
+  const feedTitle = channel.querySelector('title')?.textContent;
+  const feedDescription = channel.querySelector('description')?.textContent;
+
+  if (!feedTitle) {
+    throw new Error('invalidRSS');
+  }
 
   const feed = {
     link: url,
     title: feedTitle,
-    description: feedDescription,
+    description: feedDescription || '',
   };
 
-  const posts = [...data.querySelectorAll('item')].map(parsePostItem);
-  return { feed, posts };
+  try {
+    const posts = [...channel.querySelectorAll('item')].map(parsePostItem);
+    return { feed, posts };
+  } catch (e) {
+    throw new Error('invalidRSS');
+  }
 };
 
 export default parseRss;
