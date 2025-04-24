@@ -21,7 +21,7 @@ make install
 ```
 make build
 ```
-### Development
+## Development
 ```
 make develop
 ```
