@@ -9,7 +9,7 @@ import createUrlValidator, { getProxyUrl } from '../utils.js';
 
 const state = {
   form: {
-    status: 'pending',
+    status: 'pending', // Используется для отслеживания изменений в onChange
     errors: '',
   },
   loadingProcess: {
@@ -62,9 +62,6 @@ export default () => {
           const newPosts = posts.filter((post) => !existPosts.includes(post.url));
           const updatePosts = newPosts.map((post) => ({ ...post, id: _.uniqueId() }));
           watchedState.posts = [...updatePosts, ...watchedState.posts];
-        })
-        .catch((e) => {
-          throw e;
         }));
 
       Promise.all(promises)
